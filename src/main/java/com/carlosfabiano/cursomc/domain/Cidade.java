@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+
 @Entity
 public class Cidade implements Serializable{
 	private static final long serialVersionUID = 1L;
@@ -23,6 +24,7 @@ public class Cidade implements Serializable{
 	@JoinColumn(name="estado_id")
 	private Estado estado;
 	
+
 	public Cidade() {
 	}
 
