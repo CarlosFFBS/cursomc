@@ -1,4 +1,4 @@
-package com.carlosfabiano.cursomc.resources.exception;
+ package com.carlosfabiano.cursomc.resources.exception;
 
 import java.io.Serializable;
 

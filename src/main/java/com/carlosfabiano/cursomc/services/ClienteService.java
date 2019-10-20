@@ -1,4 +1,4 @@
-package com.carlosfabiano.cursomc.services;
+ package com.carlosfabiano.cursomc.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,10 +9,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.carlosfabiano.cursomc.domain.Cidade;
 import com.carlosfabiano.cursomc.domain.Cliente;
+import com.carlosfabiano.cursomc.domain.Endereco;
+import com.carlosfabiano.cursomc.domain.Enums.TipoCliente;
 import com.carlosfabiano.cursomc.dto.ClienteDTO;
+import com.carlosfabiano.cursomc.dto.ClienteNewDTO;
 import com.carlosfabiano.cursomc.repositories.ClienteRepository;
+import com.carlosfabiano.cursomc.repositories.EnderecoRepository;
 import com.carlosfabiano.cursomc.services.exception.DataIntegrityException;
 import com.carlosfabiano.cursomc.services.exception.ObjectNotFoundException;
 
@@ -22,20 +28,28 @@ public class ClienteService {
 	@Autowired
 	private ClienteRepository repo;
 	
+	@Autowired
+	private EnderecoRepository enderecoRepository;
+	
 	public Cliente find (Integer id) {
 		Optional<Cliente> obj = repo.findById(id);
-		return obj.orElseThrow(()-> new ObjectNotFoundException("Objeto não encontrado! Id: " + id + " , Tipo: " + Cliente.class.getName()));
+		return obj.orElseThrow(()-> new ObjectNotFoundException(
+				"Objeto não encontrado! Id: " + id + " , Tipo: " + Cliente.class.getName()));
+	}
+	
+	@Transactional
+	public Cliente insert(Cliente obj) {
+		obj.setId(null);
+		obj = repo.save(obj);
+		enderecoRepository.saveAll(obj.getEnderecos());
+    	return obj;
 	}
 	
 	public List<Cliente> findAll() {
 		return repo.findAll();
 	}
 		
-	
-	public Cliente insert(Cliente obj) {
-		obj.setId(null);
-		return repo.save(obj);
-	}
+
 	
 	public Cliente update(Cliente obj) {
 		Cliente newObj = find(obj.getId());
@@ -47,7 +61,8 @@ public class ClienteService {
 		find(id);
 		try {
 			repo.deleteById(id);	
-		} catch (DataIntegrityViolationException e) {
+		} 
+		catch (DataIntegrityViolationException e) {
 			throw new DataIntegrityException("Não é possível excluir um cliente que contém endereços cadastrados.");
 		}
 		
@@ -62,6 +77,24 @@ public class ClienteService {
 	public Cliente fromDTO(ClienteDTO objDto) {
 		return new Cliente(objDto.getId(), objDto.getNome(), objDto.getEmail(), null, null);
 		
+	}
+	
+	public Cliente fromDTO(ClienteNewDTO objDto) {
+		
+		Cliente cli = new Cliente(null, objDto.getNome(), objDto.getEmail(), objDto.getCpfOuCnpj(), TipoCliente.toEnum(objDto.getTipo()));
+		Cidade city = new Cidade(objDto.getCidadeId(), null, null);
+		Endereco end = new Endereco(null, objDto.getLogradouro(), objDto.getNumero(), objDto.getComplemento(), objDto.getBairro(), objDto.getCep(), cli, city);
+		cli.getEnderecos().add(end);
+		cli.getTelefones().add(objDto.getTelefone1());
+		
+		if (objDto.getTelefone2()!=null) {
+			cli.getTelefones().add(objDto.getTelefone2());		
+		}
+		if (objDto.getTelefone3()!=null) {
+			cli.getTelefones().add(objDto.getTelefone3());			
+		}
+		
+		return cli;
 	}
 	
 	private void updateData(Cliente newObj, Cliente obj) {

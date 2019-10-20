@@ -19,6 +19,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.carlosfabiano.cursomc.domain.Cliente;
 import com.carlosfabiano.cursomc.dto.ClienteDTO;
+import com.carlosfabiano.cursomc.dto.ClienteNewDTO;
 import com.carlosfabiano.cursomc.services.ClienteService;
 
 @RestController
@@ -27,13 +28,20 @@ public class ClienteResource {
 	
 	@Autowired
 	private ClienteService service;
+		
+	@RequestMapping(method=RequestMethod.POST)
+	public ResponseEntity<Void> insert(@Valid @RequestBody ClienteNewDTO objDto){
+		Cliente obj = service.fromDTO(objDto);
+		obj = service.insert(obj);
+		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+				.buildAndExpand(obj.getId()).toUri();
+		return ResponseEntity.created(uri).build();
+	}
 	
 
 	@RequestMapping(value="/{id}", method = RequestMethod.GET)
-	public ResponseEntity<Cliente> find(@PathVariable Integer id) {
-		
-		Cliente obj = service.find(id);
-				
+	public ResponseEntity<Cliente> find(@PathVariable Integer id) {		
+		Cliente obj = service.find(id);				
 		return ResponseEntity.ok().body(obj);
 	}
 	
@@ -57,15 +65,6 @@ public class ClienteResource {
 		return ResponseEntity.ok().body(listaDto);
 	}
 	
-	
-	@RequestMapping(method=RequestMethod.POST)
-	public ResponseEntity<Cliente> insert(@Valid @RequestBody ClienteDTO objDto){
-		Cliente obj = service.fromDTO(objDto);
-		obj = service.insert(obj);
-		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(obj.getId()).toUri();
-		return ResponseEntity.created(uri).build();
-	}
 	
 	@RequestMapping(value="/{id}", method=RequestMethod.PUT)
 	public ResponseEntity<Cliente> update(@Valid @RequestBody ClienteDTO objDto, @PathVariable Integer id ){

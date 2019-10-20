@@ -23,7 +23,9 @@ import com.carlosfabiano.cursomc.domain.Enums.EstadoPagamento;
 import com.carlosfabiano.cursomc.domain.Enums.TipoCliente;
 import com.carlosfabiano.cursomc.repositories.CategoriaRepository;
 import com.carlosfabiano.cursomc.repositories.CidadeRepository;
+import com.carlosfabiano.cursomc.repositories.ClienteRepository;
 import com.carlosfabiano.cursomc.repositories.EnderecoRepository;
+import com.carlosfabiano.cursomc.repositories.EstadoRepository;
 import com.carlosfabiano.cursomc.repositories.ItemPedidoRepository;
 import com.carlosfabiano.cursomc.repositories.PagamentoRepository;
 import com.carlosfabiano.cursomc.repositories.PedidoRepository;
@@ -39,7 +41,10 @@ public class CursomcApplication implements CommandLineRunner {
 	private ProdutoRepository produtoRepository;
 	
 	@Autowired
-	private CidadeRepository cidadeRepo;
+	private CidadeRepository cidadeRepository;
+	
+	@Autowired
+	private EstadoRepository estadoRepo;
 	
 	@Autowired
 	private EnderecoRepository enderecoRepo;
@@ -52,6 +57,9 @@ public class CursomcApplication implements CommandLineRunner {
 	
 	@Autowired
 	private ItemPedidoRepository itemPedidoRepo;
+	
+	@Autowired
+	private ClienteRepository clienteRepo;
 
 	public static void main(String[] args) {
 		SpringApplication.run(CursomcApplication.class, args);
@@ -91,7 +99,11 @@ public class CursomcApplication implements CommandLineRunner {
 		Cidade cid2 = new Cidade(null, "São Paulo", est2);
 		Cidade cid3 = new Cidade(null, "Campinas", est2);
 		
-		cidadeRepo.saveAll(Arrays.asList(cid1, cid2, cid3));
+		est1.getCidades().addAll(Arrays.asList(cid1));
+		est2.getCidades().addAll(Arrays.asList(cid2, cid3));
+		
+		estadoRepo.saveAll(Arrays.asList(est1, est2));
+		cidadeRepository.saveAll(Arrays.asList(cid1, cid2, cid3));
 		
 		Cliente c1 = new Cliente(null, "Maria Silva", "maria@gmail.com", "123.456.789-86", TipoCliente.PESSOAFISICA);
 		c1.getTelefones().addAll(Arrays.asList("3231.3231", "3113.3223"));
@@ -102,6 +114,10 @@ public class CursomcApplication implements CommandLineRunner {
 		Endereco e2 = new Endereco(null, "Avenida Matos", "105", "sl 800", "Centro", "38220804", c1, cid2);
 		Endereco e3 = new Endereco(null, "Avenida Sul", "200", "sl 100", "Botucatu", "38220804", c2, cid3);
 		
+		c1.getEnderecos().addAll(Arrays.asList(e1, e2));
+		c2.getEnderecos().addAll(Arrays.asList(e3));
+		
+		clienteRepo.saveAll(Arrays.asList(c1, c2));
 		enderecoRepo.saveAll(Arrays.asList(e1, e2, e3));	
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
